@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Controller;
 
+import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        User savedUser = userService.registerUser(user);
+    public ResponseEntity<UserResponseDTO> register(@RequestBody User user) {
+        UserResponseDTO savedUser = userService.registerUser(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
+
 }
