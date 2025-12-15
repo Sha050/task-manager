@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### ENV / CONFIG (DO NOT COMMIT SECRETS) ###
+.env
+.env.*
+application.properties
+application.yml
+application-*.yml
+
