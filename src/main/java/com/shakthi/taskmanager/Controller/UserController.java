@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Controller;
 
+import com.shakthi.taskmanager.DTO.LoginRequestDTO;
 import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Service.UserService;
@@ -23,4 +24,9 @@ public class UserController {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<UserResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
+        UserResponseDTO user = userService.login(loginRequest);
+        return ResponseEntity.ok(user);
+    }
 }

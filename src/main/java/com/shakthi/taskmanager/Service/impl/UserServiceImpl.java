@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Service.impl;
 
+import com.shakthi.taskmanager.DTO.LoginRequestDTO;
 import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.UserRepository;
@@ -37,9 +38,31 @@ public class UserServiceImpl implements UserService {
         dto.setEmail(savedUser.getEmail());
         dto.setRole(savedUser.getRole());
         dto.setCreatedAt(savedUser.getCreatedAt());
-
         return dto;
     }
 
+    @Override
+    public UserResponseDTO login(LoginRequestDTO loginRequest) {
 
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+
+        boolean passwordMatches = passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user.getPassword()
+        );
+
+        if (!passwordMatches) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+        dto.setCreatedAt(user.getCreatedAt());
+
+        return dto;
+    }
 }
