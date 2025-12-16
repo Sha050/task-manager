@@ -1,5 +1,7 @@
 package com.shakthi.taskmanager.util;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -24,4 +26,17 @@ public class JwtUtil {
                 .signWith(key)
                 .compact();
     }
+
+    public static Claims validateToken(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid or expired token");
+        }
+    }
+
 }
