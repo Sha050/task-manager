@@ -1,10 +1,12 @@
 package com.shakthi.taskmanager.Service.impl;
 
 import com.shakthi.taskmanager.DTO.LoginRequestDTO;
+import com.shakthi.taskmanager.DTO.LoginResponseDTO;
 import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Service.UserService;
+import com.shakthi.taskmanager.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,27 +44,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO login(LoginRequestDTO loginRequest) {
+    public LoginResponseDTO login(LoginRequestDTO loginRequest) {
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
-        boolean passwordMatches = passwordEncoder.matches(
-                loginRequest.getPassword(),
-                user.getPassword()
-        );
-
-        if (!passwordMatches) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid username or password");
         }
 
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        dto.setRole(user.getRole());
-        dto.setCreatedAt(user.getCreatedAt());
 
-        return dto;
+        String token = JwtUtil.generateToken(
+                user.getId(),
+                user.getUsername(),
+                user.getRole()
+        );
+
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setToken(token);
+        response.setUsername(user.getUsername());
+        response.setRole(user.getRole());
+
+        return response;
     }
+
 }
