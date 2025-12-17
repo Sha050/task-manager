@@ -1,11 +1,13 @@
 package com.shakthi.taskmanager.Controller;
 
+import com.shakthi.taskmanager.DTO.TaskAssignmentResponse;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import com.shakthi.taskmanager.Model.enums.TaskStatus;
 import com.shakthi.taskmanager.Service.TaskAssignmentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -26,8 +28,11 @@ public class TaskAssignmentController {
     }
 
     @GetMapping("/{taskId}/assignments")
-    public List<TaskAssignment> getAssignments(@PathVariable Long taskId) {
-        return assignmentService.getAssignmentsForTask(taskId);
+    public List<TaskAssignmentResponse> getAssignments(@PathVariable Long taskId) {
+        return assignmentService.getAssignmentsForTask(taskId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/{taskId}/status")
@@ -36,5 +41,14 @@ public class TaskAssignmentController {
             @RequestParam TaskStatus status
     ) {
         assignmentService.updateMyTaskStatus(taskId, status);
+    }
+
+    private TaskAssignmentResponse toResponse(TaskAssignment assignment) {
+        TaskAssignmentResponse dto = new TaskAssignmentResponse();
+        dto.setUsername(assignment.getUser().getUsername());
+        dto.setStatus(assignment.getStatus());
+        dto.setAssignedAt(assignment.getAssignedAt());
+        dto.setCompletedAt(assignment.getCompletedAt());
+        return dto;
     }
 }
