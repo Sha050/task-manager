@@ -14,7 +14,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+backend/.idea
 *.iws
 *.iml
 *.ipr
@@ -33,7 +33,7 @@ build/
 .vscode/
 
 ### ENV / CONFIG (DO NOT COMMIT SECRETS) ###
-.env
+backend/.env
 .env.*
 application.properties
 application.yml
