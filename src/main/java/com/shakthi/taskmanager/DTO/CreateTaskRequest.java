@@ -1,7 +1,6 @@
 package com.shakthi.taskmanager.DTO;
 
 import com.shakthi.taskmanager.Model.enums.TaskPriority;
-import com.shakthi.taskmanager.Model.enums.TaskStatus;
 
 import java.time.LocalDate;
 

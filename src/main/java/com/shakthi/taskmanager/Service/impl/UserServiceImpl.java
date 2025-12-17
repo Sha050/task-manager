@@ -6,14 +6,18 @@ import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Service.UserService;
+import com.shakthi.taskmanager.Exception.BadRequestException;
+import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
 import com.shakthi.taskmanager.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -24,11 +28,11 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO registerUser(User user) {
 
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new BadRequestException("Username already exists");
         }
 
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -40,6 +44,7 @@ public class UserServiceImpl implements UserService {
         dto.setEmail(savedUser.getEmail());
         dto.setRole(savedUser.getRole());
         dto.setCreatedAt(savedUser.getCreatedAt());
+
         return dto;
     }
 
@@ -47,12 +52,12 @@ public class UserServiceImpl implements UserService {
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Invalid username or password"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new BadRequestException("Invalid username or password");
         }
-
 
         String token = JwtUtil.generateToken(
                 user.getId(),
@@ -67,5 +72,4 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
-
 }

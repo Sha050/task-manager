@@ -17,8 +17,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http
+                http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/login").permitAll()
@@ -29,7 +28,6 @@ public class SecurityConfig {
                         new JwtAuthenticationFilter(),
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class
                 );
-
         return http.build();
     }
 }

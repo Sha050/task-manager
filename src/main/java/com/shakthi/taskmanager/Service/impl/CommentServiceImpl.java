@@ -9,6 +9,8 @@ import com.shakthi.taskmanager.Repository.TaskRepository;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Security.SecurityUtil;
 import com.shakthi.taskmanager.Service.CommentService;
+import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
+import com.shakthi.taskmanager.Exception.UnauthorizedActionException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,7 +43,7 @@ public class CommentServiceImpl implements CommentService {
         Task task = getTask(taskId);
 
         if (!isAssigned(taskId, user) && !isAdmin(user)) {
-            throw new RuntimeException("Not authorized to comment on this task");
+            throw new UnauthorizedActionException("Not authorized to comment on this task");
         }
 
         Comment comment = new Comment();
@@ -58,12 +60,15 @@ public class CommentServiceImpl implements CommentService {
         User user = getCurrentUser();
         Task task = getTask(taskId);
 
-        if (!isAssigned(taskId, user) && !isAdmin(user)) {
-            throw new RuntimeException("Not authorized to view comments");
+        boolean isCreator = task.getCreatedBy().getId().equals(user.getId());
+
+        if (!isAssigned(taskId, user) && !isAdmin(user) && !isCreator) {
+            throw new UnauthorizedActionException("Not authorized to view comments");
         }
 
         return commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
     }
+
 
     @Override
     public Comment editComment(Long commentId, String newContent) {
@@ -71,10 +76,11 @@ public class CommentServiceImpl implements CommentService {
         User user = getCurrentUser();
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
 
-        if (!comment.getAuthor().getId().equals(user.getId()) && !isAdmin(user)) {
-            throw new RuntimeException("Not authorized to edit this comment");
+        if (!comment.getAuthor().getId().equals(user.getId())
+                && !isAdmin(user)) {
+            throw new UnauthorizedActionException("Not authorized to edit this comment");
         }
 
         comment.setContent(newContent);
@@ -90,21 +96,23 @@ public class CommentServiceImpl implements CommentService {
         User user = getCurrentUser();
 
         if (!isAdmin(user)) {
-            throw new RuntimeException("Only admin can delete comments");
+            throw new UnauthorizedActionException("Only admin can delete comments");
         }
 
         commentRepository.deleteById(commentId);
     }
 
+    // ---------- helpers ----------
+
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private Task getTask(Long taskId) {
         return taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
     }
 
     private boolean isAssigned(Long taskId, User user) {

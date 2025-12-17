@@ -13,9 +13,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api")
 public class CommentController {
-
     private final CommentService commentService;
-
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
