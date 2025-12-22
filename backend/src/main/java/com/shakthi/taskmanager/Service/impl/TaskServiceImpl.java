@@ -5,6 +5,7 @@ import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.TaskRepository;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Security.SecurityUtil;
+import com.shakthi.taskmanager.Service.ActivityService;
 import com.shakthi.taskmanager.Service.TaskService;
 import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
 import com.shakthi.taskmanager.Exception.UnauthorizedActionException;
@@ -19,11 +20,14 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     public TaskServiceImpl(TaskRepository taskRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           ActivityService activityService) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.activityService = activityService;
     }
 
     @Override
@@ -34,7 +38,11 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         task.setCreatedBy(creator);
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        activityService.logActivity("TASK_CREATED", savedTask, creator);
+
+        return savedTask;
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.shakthi.taskmanager.Repository.TaskAssignmentRepository;
 import com.shakthi.taskmanager.Repository.TaskRepository;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Security.SecurityUtil;
+import com.shakthi.taskmanager.Service.ActivityService;
 import com.shakthi.taskmanager.Service.TaskAssignmentService;
 import com.shakthi.taskmanager.Exception.BadRequestException;
 import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
@@ -24,13 +25,16 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     private final TaskAssignmentRepository assignmentRepository;
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     public TaskAssignmentServiceImpl(TaskAssignmentRepository assignmentRepository,
                                      TaskRepository taskRepository,
-                                     UserRepository userRepository) {
+                                     UserRepository userRepository,
+                                     ActivityService activityService) {
         this.assignmentRepository = assignmentRepository;
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.activityService = activityService;
     }
 
     @Override
@@ -61,11 +65,39 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
         assignment.setUser(assignee);
 
         assignmentRepository.save(assignment);
+
+        activityService.logActivity("USER_ASSIGNED", task, currentUser);
+    }
+
+    @Override
+    public void updateMyTaskStatus(Long taskId, TaskStatus status) {
+
+        String username = SecurityUtil.getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        TaskAssignment assignment = assignmentRepository
+                .findByTaskIdAndUserId(taskId, user.getId())
+                .orElseThrow(() ->
+                        new UnauthorizedActionException("You are not assigned to this task"));
+
+        assignment.setStatus(status);
+
+        if (status == TaskStatus.DONE) {
+            assignment.setCompletedAt(LocalDateTime.now());
+        }
+
+        assignmentRepository.save(assignment);
+
+        activityService.logActivity(
+                "STATUS_CHANGED to " + status,
+                assignment.getTask(),
+                user
+        );
     }
 
     @Override
     public List<TaskAssignment> getAssignmentsForTask(Long taskId) {
-
         String username = SecurityUtil.getCurrentUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -88,29 +120,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
     }
 
     @Override
-    public void updateMyTaskStatus(Long taskId, TaskStatus status) {
-
-        String username = SecurityUtil.getCurrentUsername();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        TaskAssignment assignment = assignmentRepository
-                .findByTaskIdAndUserId(taskId, user.getId())
-                .orElseThrow(() ->
-                        new UnauthorizedActionException("You are not assigned to this task"));
-
-        assignment.setStatus(status);
-
-        if (status == TaskStatus.DONE) {
-            assignment.setCompletedAt(LocalDateTime.now());
-        }
-
-        assignmentRepository.save(assignment);
-    }
-
-    @Override
     public List<AssigneeResponseDTO> getAssigneesForTask(Long taskId) {
-
         String username = SecurityUtil.getCurrentUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -136,5 +146,4 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                 ))
                 .toList();
     }
-
 }

@@ -8,6 +8,7 @@ import com.shakthi.taskmanager.Repository.TaskAssignmentRepository;
 import com.shakthi.taskmanager.Repository.TaskRepository;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Security.SecurityUtil;
+import com.shakthi.taskmanager.Service.ActivityService;
 import com.shakthi.taskmanager.Service.CommentService;
 import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
 import com.shakthi.taskmanager.Exception.UnauthorizedActionException;
@@ -23,17 +24,20 @@ public class CommentServiceImpl implements CommentService {
     private final TaskRepository taskRepository;
     private final TaskAssignmentRepository assignmentRepository;
     private final UserRepository userRepository;
+    private final ActivityService activityService;
 
     public CommentServiceImpl(
             CommentRepository commentRepository,
             TaskRepository taskRepository,
             TaskAssignmentRepository assignmentRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            ActivityService activityService
     ) {
         this.commentRepository = commentRepository;
         this.taskRepository = taskRepository;
         this.assignmentRepository = assignmentRepository;
         this.userRepository = userRepository;
+        this.activityService = activityService;
     }
 
     @Override
@@ -51,7 +55,11 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthor(user);
         comment.setContent(content);
 
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+
+        activityService.logActivity("COMMENT_ADDED", task, user);
+
+        return savedComment;
     }
 
     @Override
@@ -68,7 +76,6 @@ public class CommentServiceImpl implements CommentService {
 
         return commentRepository.findByTaskIdOrderByCreatedAtAsc(taskId);
     }
-
 
     @Override
     public Comment editComment(Long commentId, String newContent) {
@@ -101,8 +108,6 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.deleteById(commentId);
     }
-
-    // ---------- helpers ----------
 
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
