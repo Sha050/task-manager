@@ -3,6 +3,7 @@ package com.shakthi.taskmanager.Service.impl;
 import com.shakthi.taskmanager.DTO.LoginRequestDTO;
 import com.shakthi.taskmanager.DTO.LoginResponseDTO;
 import com.shakthi.taskmanager.DTO.UserResponseDTO;
+import com.shakthi.taskmanager.DTO.UserSummaryDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.UserRepository;
 import com.shakthi.taskmanager.Service.UserService;
@@ -11,6 +12,8 @@ import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
 import com.shakthi.taskmanager.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,6 +50,31 @@ public class UserServiceImpl implements UserService {
 
         return dto;
     }
+
+    @Override
+    public List<UserSummaryDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserSummaryDTO(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getRole()
+                ))
+                .toList();
+    }
+
+    @Override
+    public List<UserSummaryDTO> searchUsers(String query) {
+        return userRepository.findByUsernameContainingIgnoreCase(query)
+                .stream()
+                .map(user -> new UserSummaryDTO(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getRole()
+                ))
+                .toList();
+    }
+
 
     @Override
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
