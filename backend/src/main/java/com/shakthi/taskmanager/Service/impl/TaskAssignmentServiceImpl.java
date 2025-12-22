@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Service.impl;
 
+import com.shakthi.taskmanager.DTO.AssigneeResponseDTO;
 import com.shakthi.taskmanager.Model.Task;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import com.shakthi.taskmanager.Model.User;
@@ -106,4 +107,34 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
         assignmentRepository.save(assignment);
     }
+
+    @Override
+    public List<AssigneeResponseDTO> getAssigneesForTask(Long taskId) {
+
+        String username = SecurityUtil.getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        boolean isAssigned = assignmentRepository
+                .findByTaskIdAndUserId(taskId, user.getId())
+                .isPresent();
+
+        if (!isAssigned && !user.getRole().equals("ADMIN")
+                && !task.getCreatedBy().getId().equals(user.getId())) {
+            throw new UnauthorizedActionException("Not authorized to view assignees");
+        }
+
+        return assignmentRepository.findByTaskId(taskId)
+                .stream()
+                .map(a -> new AssigneeResponseDTO(
+                        a.getUser().getId(),
+                        a.getUser().getUsername(),
+                        a.getAssignedAt()
+                ))
+                .toList();
+    }
+
 }

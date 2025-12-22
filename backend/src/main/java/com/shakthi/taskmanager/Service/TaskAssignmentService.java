@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Service;
 
+import com.shakthi.taskmanager.DTO.AssigneeResponseDTO;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import com.shakthi.taskmanager.Model.enums.TaskStatus;
 
@@ -12,4 +13,6 @@ public interface TaskAssignmentService {
     List<TaskAssignment> getAssignmentsForTask(Long taskId);
 
     void updateMyTaskStatus(Long taskId, TaskStatus status);
+
+    List<AssigneeResponseDTO> getAssigneesForTask(Long taskId);
 }

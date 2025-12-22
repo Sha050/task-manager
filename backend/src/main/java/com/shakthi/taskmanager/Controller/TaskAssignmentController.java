@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Controller;
 
+import com.shakthi.taskmanager.DTO.AssigneeResponseDTO;
 import com.shakthi.taskmanager.DTO.TaskAssignmentResponse;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import com.shakthi.taskmanager.Model.enums.TaskStatus;
@@ -43,6 +44,12 @@ public class TaskAssignmentController {
         assignmentService.updateMyTaskStatus(taskId, status);
     }
 
+    @GetMapping("/{taskId}/assignees")
+    public List<AssigneeResponseDTO> getAssignees(@PathVariable Long taskId) {
+        return assignmentService.getAssigneesForTask(taskId);
+    }
+
+
     private TaskAssignmentResponse toResponse(TaskAssignment assignment) {
         TaskAssignmentResponse dto = new TaskAssignmentResponse();
         dto.setUsername(assignment.getUser().getUsername());
@@ -51,4 +58,6 @@ public class TaskAssignmentController {
         dto.setCompletedAt(assignment.getCompletedAt());
         return dto;
     }
+
+
 }

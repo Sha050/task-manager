@@ -7,8 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TaskAssignmentRepository extends JpaRepository<TaskAssignment, Long> {
-
     List<TaskAssignment> findByUserId(Long userId);
-
+    List<TaskAssignment> findByTaskId(Long taskId);
     Optional<TaskAssignment> findByTaskIdAndUserId(Long taskId, Long userId);
 }
