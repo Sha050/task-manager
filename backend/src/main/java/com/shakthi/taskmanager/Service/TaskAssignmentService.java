@@ -15,4 +15,9 @@ public interface TaskAssignmentService {
     void updateMyTaskStatus(Long taskId, TaskStatus status);
 
     List<AssigneeResponseDTO> getAssigneesForTask(Long taskId);
+
+    void assignMe(Long taskId);
+
+    void assignUser(Long taskId, Long userId);
+
 }

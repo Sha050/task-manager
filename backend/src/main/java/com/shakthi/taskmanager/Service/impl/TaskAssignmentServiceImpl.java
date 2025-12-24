@@ -15,6 +15,8 @@ import com.shakthi.taskmanager.Exception.BadRequestException;
 import com.shakthi.taskmanager.Exception.ResourceNotFoundException;
 import com.shakthi.taskmanager.Exception.UnauthorizedActionException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,7 +68,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
 
         assignmentRepository.save(assignment);
 
-        activityService.logActivity("USER_ASSIGNED", task, currentUser);
+//        activityService.logActivity("USER_ASSIGNED", task, currentUser);
     }
 
     @Override
@@ -119,6 +121,64 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                 .toList();
     }
 
+
+    @Transactional
+    @Override
+    public void assignMe(Long taskId) {
+        String username = SecurityUtil.getCurrentUsername();
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        boolean alreadyAssigned = assignmentRepository
+                .findByTaskIdAndUserId(taskId, currentUser.getId())
+                .isPresent();
+
+        if (alreadyAssigned) return;
+
+        TaskAssignment assignment = new TaskAssignment();
+        assignment.setTask(task);
+        assignment.setUser(currentUser);
+
+        assignmentRepository.save(assignment);
+
+//        activityService.logActivity(
+//                "USER_ASSIGNED (self)",
+//                task,
+//                currentUser
+//        );
+    }
+
+    @Transactional
+    @Override
+    public void assignUser(Long taskId, Long userId) {
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (assignmentRepository.findByTaskIdAndUserId(taskId, userId).isPresent()) {
+            return; // idempotent
+        }
+
+        TaskAssignment assignment = new TaskAssignment();
+        assignment.setTask(task);
+        assignment.setUser(user);
+
+        assignment.setStatus(TaskStatus.TODO);
+
+        assignment.setAssignedAt(LocalDateTime.now());
+
+        assignmentRepository.saveAndFlush(assignment);
+    }
+
+
+
     @Override
     public List<AssigneeResponseDTO> getAssigneesForTask(Long taskId) {
         String username = SecurityUtil.getCurrentUsername();
@@ -142,6 +202,7 @@ public class TaskAssignmentServiceImpl implements TaskAssignmentService {
                 .map(a -> new AssigneeResponseDTO(
                         a.getUser().getId(),
                         a.getUser().getUsername(),
+                        a.getStatus(),
                         a.getAssignedAt()
                 ))
                 .toList();

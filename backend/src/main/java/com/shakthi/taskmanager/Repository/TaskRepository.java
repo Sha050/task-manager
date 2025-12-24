@@ -8,6 +8,6 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByDeletedAtIsNull();
-
+    List<Task> findDistinctByAssignmentsUserIdAndDeletedAtIsNull(Long userId);
     List<Task> findByCreatedByIdAndDeletedAtIsNull(Long userId);
 }

@@ -2,6 +2,7 @@ package com.shakthi.taskmanager.Controller;
 
 import com.shakthi.taskmanager.DTO.CreateTaskRequest;
 import com.shakthi.taskmanager.DTO.TaskResponse;
+import com.shakthi.taskmanager.DTO.UpdateTaskRequest;
 import com.shakthi.taskmanager.Model.Task;
 import com.shakthi.taskmanager.Service.TaskService;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,27 @@ public class TaskController {
         return toResponse(saved);
     }
 
+    @PatchMapping("/{taskId}")
+    public TaskResponse updateTask(
+            @PathVariable Long taskId,
+            @RequestBody UpdateTaskRequest request
+    ) {
+        Task updated = taskService.updateTask(
+                taskId,
+                request.getTitle(),
+                request.getDescription()
+        );
+        return toResponse(updated);
+    }
+
+    @GetMapping("/visible")
+    public List<TaskResponse> getVisibleTasks() {
+        return taskService.getTasksVisibleToMe()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     @GetMapping("/me")
     public List<TaskResponse> getMyTasks() {
         return taskService.getMyTasks()
@@ -45,6 +67,12 @@ public class TaskController {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{taskId}")
+    public TaskResponse getTaskById(@PathVariable Long taskId) {
+        Task task = taskService.getTaskById(taskId);
+        return toResponse(task);
     }
 
     @DeleteMapping("/{taskId}")

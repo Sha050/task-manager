@@ -13,4 +13,6 @@ public interface UserService {
     LoginResponseDTO login(LoginRequestDTO loginRequest);
     List<UserSummaryDTO> getAllUsers();
     List<UserSummaryDTO> searchUsers(String query);
+    UserResponseDTO getByUsername(String username);
+
 }

@@ -6,6 +6,7 @@ import com.shakthi.taskmanager.DTO.UserResponseDTO;
 import com.shakthi.taskmanager.DTO.UserSummaryDTO;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Service.UserService;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,12 @@ public class UserController {
     @GetMapping("/search")
     public List<UserSummaryDTO> searchUsers(@RequestParam String query) {
         return userService.searchUsers(query);
+    }
+
+    @GetMapping("/me")
+    public UserResponseDTO getCurrentUser(Authentication authentication) {
+        String username = authentication.getName();
+        return userService.getByUsername(username);
     }
 
 }

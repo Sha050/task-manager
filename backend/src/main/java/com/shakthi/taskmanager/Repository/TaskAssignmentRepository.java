@@ -1,5 +1,6 @@
 package com.shakthi.taskmanager.Repository;
 
+import com.shakthi.taskmanager.Model.Task;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import org.springframework.data.jpa.repository.JpaRepository;
 

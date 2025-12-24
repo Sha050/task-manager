@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tasks")
@@ -30,6 +32,10 @@ public class Task {
     private TaskPriority priority = TaskPriority.MEDIUM;
 
     private LocalDate dueDate;
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL)
+    private List<TaskAssignment> assignments = new ArrayList<>();
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)

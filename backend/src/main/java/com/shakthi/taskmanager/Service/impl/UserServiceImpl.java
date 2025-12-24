@@ -28,6 +28,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseDTO getByUsername(String username) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found"));
+
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+        dto.setCreatedAt(user.getCreatedAt());
+
+        return dto;
+    }
+
+
+    @Override
     public UserResponseDTO registerUser(User user) {
 
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {

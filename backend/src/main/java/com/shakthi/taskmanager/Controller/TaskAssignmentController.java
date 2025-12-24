@@ -5,6 +5,7 @@ import com.shakthi.taskmanager.DTO.TaskAssignmentResponse;
 import com.shakthi.taskmanager.Model.TaskAssignment;
 import com.shakthi.taskmanager.Model.enums.TaskStatus;
 import com.shakthi.taskmanager.Service.TaskAssignmentService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,6 +49,14 @@ public class TaskAssignmentController {
     public List<AssigneeResponseDTO> getAssignees(@PathVariable Long taskId) {
         return assignmentService.getAssigneesForTask(taskId);
     }
+
+    @PostMapping("/{taskId}/assign/me")
+    public ResponseEntity<Void> assignMe(@PathVariable Long taskId) {
+        assignmentService.assignMe(taskId);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+
 
 
     private TaskAssignmentResponse toResponse(TaskAssignment assignment) {

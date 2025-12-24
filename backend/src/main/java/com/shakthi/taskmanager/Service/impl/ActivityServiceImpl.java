@@ -6,11 +6,14 @@ import com.shakthi.taskmanager.Model.Task;
 import com.shakthi.taskmanager.Model.User;
 import com.shakthi.taskmanager.Repository.ActivityRepository;
 import com.shakthi.taskmanager.Service.ActivityService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class ActivityServiceImpl implements ActivityService {
 
     private final ActivityRepository activityRepository;
